@@ -106,10 +106,11 @@
   // -------------------------------------------------------------- toasts
 
   function toast(message, kind) {
+    const variant = { error: 'danger', success: 'success' }[kind] || 'primary';
     const node = document.createElement('div');
-    node.className = `toast toast--${kind || 'info'}`;
-    node.setAttribute('role', 'status');
-    node.textContent = message;
+    node.className = `toast show border-0 shadow text-bg-${variant}`;
+    node.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    node.append(el('div', { class: 'toast-body', text: message }));
     dom.toasts.append(node);
 
     window.setTimeout(() => {
@@ -241,6 +242,22 @@
     trash: 'M3.5 5h9M6.5 5V3.5h3V5M5 5l.6 8h4.8L11 5',
     clock: 'M8 3.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM8 6v2.5l1.8 1.2',
     plus: 'M8 3.5v9M3.5 8h9',
+    list: 'M5.5 4.5h7M5.5 8h7M5.5 11.5h7M3 4.5h.01M3 8h.01M3 11.5h.01',
+    alert: 'M8 2.5l6 10.5H2L8 2.5zM8 6.5v3M8 11.2h.01',
+  };
+
+  const TONE_CLASSES = {
+    overdue: 'text-danger',
+    soon: 'text-warning-emphasis',
+    done: 'text-success',
+    normal: 'text-body-secondary',
+  };
+
+  const STATE_BADGES = {
+    pending: 'bg-primary-subtle text-primary-emphasis',
+    ongoing: 'bg-warning-subtle text-warning-emphasis',
+    backlog: 'bg-secondary-subtle text-secondary-emphasis',
+    completed: 'bg-success-subtle text-success-emphasis',
   };
 
   // ------------------------------------------------------- data loading
@@ -521,6 +538,7 @@
     const focused = describeFocus();
 
     renderSpaceSelect();
+    renderStats();
     renderChips();
     renderStatusLine();
     renderTasks();
@@ -561,18 +579,43 @@
 
   function renderChips() {
     const nodes = FILTERS.map((filter) => {
-      const chip = el('button', {
+      const active = state.filter === filter.id;
+      return el('button', {
         type: 'button',
-        class: 'chip',
-        'aria-pressed': String(state.filter === filter.id),
+        class: `nav-link${active ? ' active' : ''}`,
+        'aria-pressed': String(active),
         dataset: { filter: filter.id },
       }, [
         document.createTextNode(filter.label),
-        el('span', { class: 'chip__count', text: String(countFor(filter.id)) }),
+        el('span', { class: 'badge rounded-pill', text: String(countFor(filter.id)) }),
       ]);
-      return chip;
     });
     dom.chips.replaceChildren(...nodes);
+  }
+
+  function renderStats() {
+    const open = state.tasks.filter((task) => task.status !== 'completed');
+    const overdue = open.filter((task) => {
+      const delta = dayDelta(task.dueOn);
+      return delta !== null && delta < 0;
+    }).length;
+
+    const tiles = [
+      { label: 'Pending', value: countFor('pending'), tone: 'primary', glyph: ICONS.list },
+      { label: 'Ongoing', value: countFor('ongoing'), tone: 'warning', glyph: ICONS.play },
+      { label: 'Overdue', value: overdue, tone: 'danger', glyph: ICONS.alert },
+      { label: 'Completed', value: countFor('completed'), tone: 'success', glyph: ICONS.check },
+    ];
+
+    dom.stats.replaceChildren(...tiles.map((tile) => el('div', { class: 'col' }, [
+      el('div', { class: 'stat' }, [
+        el('span', { class: `stat__icon bg-${tile.tone}-subtle text-${tile.tone}-emphasis` }, [icon(tile.glyph, 18)]),
+        el('div', {}, [
+          el('span', { class: 'stat__value', text: String(tile.value) }),
+          el('span', { class: 'stat__label', text: tile.label }),
+        ]),
+      ]),
+    ])));
   }
 
   function renderStatusLine() {
@@ -611,46 +654,38 @@
 
   function renderCard(task) {
     const due = dueDescription(task);
-    const busy = state.busy.has(task.id);
-    const classes = ['card'];
+    const overdue = due && due.tone === 'overdue';
+    const classes = ['card', 'h-100', 'task-card', `task-card--${overdue ? 'overdue' : task.status}`];
 
-    if (due && due.tone === 'overdue') {
-      classes.push('card--overdue');
-    }
-    if (due && due.tone === 'soon' && task.status !== 'completed') {
-      classes.push('card--soon');
-    }
-    if (task.status === 'completed') {
-      classes.push('card--completed');
-    }
-    if (busy) {
-      classes.push('card--pending-op');
+    if (state.busy.has(task.id)) {
+      classes.push('task-card--busy');
     }
 
-    const top = el('div', { class: 'card__top' }, [
-      el('span', { class: 'id-badge', text: `#${task.id}` }),
-      el('span', {
-        class: 'state-badge',
-        dataset: { state: task.status },
-        text: STATE_LABELS[task.status] || task.status,
-      }),
-    ]);
-
-    const children = [top, el('h3', { class: 'card__name', text: task.name })];
+    const body = [
+      el('div', { class: 'd-flex align-items-center justify-content-between gap-2 mb-2' }, [
+        el('span', { class: 'id-badge', text: `#${task.id}` }),
+        el('span', {
+          class: `badge rounded-pill ${STATE_BADGES[task.status] || STATE_BADGES.backlog}`,
+          dataset: { state: task.status },
+          text: STATE_LABELS[task.status] || task.status,
+        }),
+      ]),
+      el('h3', { class: 'task-card__name mb-2', text: task.name }),
+    ];
 
     if (task.description) {
-      children.push(el('p', { class: 'card__description', text: task.description }));
+      body.push(el('p', { class: 'card-text text-body-secondary mb-2', text: task.description }));
     }
 
     if (due) {
-      children.push(el('p', {
-        class: `card__due card__due--${due.tone}`,
+      body.push(el('p', {
+        class: `task-card__due mb-2 ${TONE_CLASSES[due.tone] || TONE_CLASSES.normal}`,
         title: due.absolute,
-      }, [icon(ICONS.clock, 13), el('span', { text: due.text })]));
+      }, [icon(ICONS.clock, 14), el('span', { text: due.text })]));
     }
 
     if (task.remarks) {
-      const details = el('details', { class: 'card__remarks', dataset: { remarks: String(task.id) } }, [
+      const details = el('details', { class: 'task-card__remarks border-top pt-2 mt-2', dataset: { remarks: String(task.id) } }, [
         el('summary', { text: 'Remarks' }),
         el('p', { text: task.remarks }),
       ]);
@@ -662,51 +697,55 @@
           state.remarksOpen.delete(task.id);
         }
       });
-      children.push(details);
+      body.push(details);
     }
 
-    children.push(renderActions(task));
-    return el('article', { class: classes.join(' '), dataset: { task: String(task.id) } }, children);
+    return el('div', { class: 'col' }, [
+      el('article', { class: classes.join(' '), dataset: { task: String(task.id) } }, [
+        el('div', { class: 'card-body pb-2' }, body),
+        el('div', { class: 'card-footer border-top-0 d-flex flex-wrap align-items-center gap-2' }, renderActions(task)),
+      ]),
+    ]);
   }
 
   function renderActions(task) {
-    const actions = [];
     const id = task.id;
 
-    const action = (label, iconPath, extraClass, handler, dataset) => {
+    const action = (label, iconPath, variant, handler, dataset, iconOnly) => {
       const button = el('button', {
         type: 'button',
-        class: `action ${extraClass || ''}`.trim(),
+        class: `btn btn-sm btn-${variant}`,
         'aria-label': label,
         title: label,
         dataset: dataset,
-      }, [icon(iconPath, 13), el('span', { text: label })]);
+      }, [icon(iconPath, 14), iconOnly ? null : el('span', { text: label })]);
       button.addEventListener('click', handler);
       return button;
     };
 
-    const transition = (label, target, iconPath, extraClass) =>
-      action(label, iconPath, extraClass, () => changeState(task, target), { action: 'state', task: String(id), target });
+    const transition = (label, target, iconPath, variant) =>
+      action(label, iconPath, variant, () => changeState(task, target), { action: 'state', task: String(id), target });
+
+    const actions = [];
 
     if (task.status === 'completed') {
-      actions.push(transition('Reopen', 'pending', ICONS.undo, 'action--primary'));
+      actions.push(transition('Reopen', 'pending', ICONS.undo, 'outline-primary'));
+    } else if (task.status === 'backlog') {
+      actions.push(transition('Start', 'ongoing', ICONS.play, 'primary'));
+      actions.push(transition('Queue', 'pending', ICONS.pause, 'outline-secondary'));
+    } else if (task.status === 'pending') {
+      actions.push(transition('Start', 'ongoing', ICONS.play, 'primary'));
+      actions.push(transition('Complete', 'completed', ICONS.check, 'outline-success'));
     } else {
-      if (task.status === 'backlog') {
-        actions.push(transition('Start', 'ongoing', ICONS.play, 'action--primary'));
-        actions.push(action('Queue', ICONS.pause, '', () => changeState(task, 'pending'), { action: 'state', task: String(id), target: 'pending' }));
-      } else if (task.status === 'pending') {
-        actions.push(transition('Start', 'ongoing', ICONS.play, 'action--primary'));
-        actions.push(action('Complete', ICONS.check, '', () => changeState(task, 'completed'), { action: 'state', task: String(id), target: 'completed' }));
-      } else {
-        actions.push(transition('Complete', 'completed', ICONS.check, 'action--primary'));
-        actions.push(action('Pause', ICONS.pause, '', () => changeState(task, 'pending'), { action: 'state', task: String(id), target: 'pending' }));
-      }
+      actions.push(transition('Complete', 'completed', ICONS.check, 'success'));
+      actions.push(transition('Pause', 'pending', ICONS.pause, 'outline-secondary'));
     }
 
-    const edit = action('Edit', ICONS.edit, '', () => openEditor(task), { action: 'edit', task: String(id) });
-    const remove = action('Delete', ICONS.trash, 'action--danger', () => openDeleteConfirm(task), { action: 'delete', task: String(id) });
+    const edit = action('Edit', ICONS.edit, 'outline-secondary', () => openEditor(task), { action: 'edit', task: String(id) }, true);
+    const remove = action('Delete', ICONS.trash, 'outline-danger', () => openDeleteConfirm(task), { action: 'delete', task: String(id) }, true);
+    edit.classList.add('ms-auto');
 
-    return el('div', { class: 'card__actions' }, actions.concat([edit, remove]));
+    return actions.concat([edit, remove]);
   }
 
   // -------------------------------------------------------- focus care
@@ -774,6 +813,7 @@
     dom.deleteSpaceButton = document.getElementById('delete-space');
     dom.search = document.getElementById('search-input');
     dom.chips = document.getElementById('status-chips');
+    dom.stats = document.getElementById('stats');
     dom.newTask = document.getElementById('new-task');
     dom.statusLine = document.getElementById('status-line');
     dom.skeleton = document.getElementById('skeleton');

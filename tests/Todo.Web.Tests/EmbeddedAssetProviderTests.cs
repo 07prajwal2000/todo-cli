@@ -29,7 +29,7 @@ public sealed class EmbeddedAssetProviderTests
         var (contentType, body) = await ReadAsync("/app.css");
 
         Assert.Equal("text/css; charset=utf-8", contentType);
-        Assert.Contains(".task-grid", body, StringComparison.Ordinal);
+        Assert.Contains(".task-card", body, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -42,10 +42,10 @@ public sealed class EmbeddedAssetProviderTests
     }
 
     [Fact]
-    public void PicoIsEmbeddedAndServedAsCss()
+    public void BootstrapIsEmbeddedAndServedAsCss()
     {
-        Assert.True(_provider.TryResolve("/pico.min.css", out var fileName));
-        Assert.Equal("pico.min.css", fileName);
+        Assert.True(_provider.TryResolve("/bootstrap.min.css", out var fileName));
+        Assert.Equal("bootstrap.min.css", fileName);
         Assert.Equal("text/css; charset=utf-8", EmbeddedAssetProvider.ContentTypeFor(fileName));
     }
 

@@ -21,20 +21,22 @@ public sealed class DashboardHostTests
         using var index = await client.GetAsync("/");
         using var css = await client.GetAsync("/app.css");
         using var js = await client.GetAsync("/app.js");
-        using var pico = await client.GetAsync("/pico.min.css");
+        using var bootstrap = await client.GetAsync("/bootstrap.min.css");
+        using var font = await client.GetAsync("/inter-latin.woff2");
 
         Assert.Equal(HttpStatusCode.OK, index.StatusCode);
         Assert.Equal("text/html", index.Content.Headers.ContentType?.MediaType);
         Assert.Equal("text/css", css.Content.Headers.ContentType?.MediaType);
         Assert.Equal("text/javascript", js.Content.Headers.ContentType?.MediaType);
-        Assert.Equal("text/css", pico.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("text/css", bootstrap.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("font/woff2", font.Content.Headers.ContentType?.MediaType);
 
         Assert.NotNull(index.Headers.CacheControl);
         Assert.True(index.Headers.CacheControl!.NoCache);
     }
 
     [Fact]
-    public async Task PicoIsVendoredAndNotReferencedFromACdn()
+    public async Task BootstrapIsVendoredAndNotReferencedFromACdn()
     {
         await using var harness = await DashboardHarness.CreateAsync();
         using var client = harness.CreateClient();
@@ -43,7 +45,11 @@ public sealed class DashboardHostTests
 
         Assert.DoesNotContain("cdn.", html, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("https://", html, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("/pico.min.css", html, StringComparison.Ordinal);
+        Assert.Contains("/bootstrap.min.css", html, StringComparison.Ordinal);
+
+        var css = await client.GetStringAsync("/bootstrap.min.css");
+
+        Assert.DoesNotContain("fonts.googleapis.com", css, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

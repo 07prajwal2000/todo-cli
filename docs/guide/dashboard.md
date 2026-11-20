@@ -112,11 +112,16 @@ stays a single file.
 
 ### Layout
 
-- **Header toolbar** — space selector with add/delete buttons, a search box, status filter chips with
-  live counts, and a **New task** button.
+- **Navbar** — space selector with add/delete buttons.
+- **Page header** — the connected sheet and space, plus the **New task** button.
+- **Summary tiles** — pending, ongoing, overdue and completed counts for the space.
+- **Toolbar** — a search box and status filter pills with live counts.
 - **Status line** — `Showing N of M tasks`, plus the active search term.
 - **Task grid** — one card per task.
 - **Footer** — `Loopback only · / search · n new task · Esc close`.
+
+Styling is [Bootswatch Zephyr](https://bootswatch.com/zephyr/) (Bootstrap 5.3) with the Inter font, both
+vendored into the assembly so the page works offline. The theme follows the OS light/dark setting.
 
 ### Task cards
 

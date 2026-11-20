@@ -7,116 +7,190 @@
   <meta name="color-scheme" content="light dark">
   <meta name="description" content="Local dashboard for the todo CLI.">
   <title>Todo Dashboard</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preload" href="/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/bootstrap.min.css">
   <link rel="stylesheet" href="/app.css">
+  <script>
+    // Follow the OS colour scheme before first paint so there is no light flash in dark mode.
+    (() => {
+      const query = window.matchMedia('(prefers-color-scheme: dark)');
+      const apply = () => document.documentElement.setAttribute('data-bs-theme', query.matches ? 'dark' : 'light');
+      apply();
+      query.addEventListener('change', apply);
+    })();
+  </script>
 </head>
 
 <body>
-  <div class="app">
-    <header class="app-header">
-      <div class="app-header__title">
-        <h1>Todo <span class="app-header__accent">Dashboard</span></h1>
-        <p class="app-header__meta" id="server-meta">Connecting…</p>
-      </div>
+  <nav class="navbar bg-body border-bottom sticky-top app-navbar">
+    <div class="container-xxl gap-3">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold m-0" href="/">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="16" height="16" focusable="false">
+            <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span>Todo</span>
+      </a>
 
-      <div class="toolbar">
-        <div class="field field--space">
-          <label for="space-select">Space</label>
-          <div class="space-control">
-            <select id="space-select" name="space">
-              <option value="">Loading…</option>
-            </select>
-            <button type="button" class="icon-button" id="add-space" aria-label="Create a space"
-              title="Create a space">
-              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
-                <path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" />
-              </svg>
-            </button>
-            <button type="button" class="icon-button" id="delete-space" aria-label="Delete the current space"
-              title="Delete the current space">
-              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
-                <path d="M3.5 5h9M6.5 5V3.5h3V5M5 5l.6 8h4.8L11 5" fill="none" stroke="currentColor"
-                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="field field--search">
-          <label for="search-input">Search</label>
-          <input id="search-input" name="search" type="search" autocomplete="off" spellcheck="false"
-            placeholder="Name, description or remarks  ( / )">
-        </div>
-
-        <div class="field field--filters">
-          <span class="field__label" id="filters-label">Status</span>
-          <div class="chips" id="status-chips" role="group" aria-labelledby="filters-label"></div>
-        </div>
-
-        <div class="field field--action">
-          <button type="button" id="new-task" class="button-primary">
-            <span aria-hidden="true">＋</span> New task
-            <kbd class="kbd-hint">n</kbd>
+      <div class="space-picker">
+        <label class="visually-hidden" for="space-select">Space</label>
+        <div class="input-group">
+          <span class="input-group-text text-body-secondary" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="15" height="15" focusable="false">
+              <path d="M2.5 4.5a1 1 0 011-1h3l1.5 1.5h4.5a1 1 0 011 1v6a1 1 0 01-1 1h-9a1 1 0 01-1-1v-7.5z"
+                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <select class="form-select" id="space-select" name="space">
+            <option value="">Loading…</option>
+          </select>
+          <button type="button" class="btn btn-outline-secondary" id="add-space" aria-label="Create a space"
+            title="Create a space">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+              <path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" />
+            </svg>
+          </button>
+          <button type="button" class="btn btn-outline-danger" id="delete-space" aria-label="Delete the current space"
+            title="Delete the current space">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+              <path d="M3.5 5h9M6.5 5V3.5h3V5M5 5l.6 8h4.8L11 5" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </button>
         </div>
       </div>
+    </div>
+  </nav>
+
+  <main class="container-xxl py-4 py-lg-5">
+    <header class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+      <div class="min-w-0">
+        <h1 class="h2 fw-bold mb-1">Tasks</h1>
+        <p class="text-body-secondary small mb-0 text-truncate" id="server-meta">Connecting…</p>
+      </div>
+      <button type="button" id="new-task" class="btn btn-primary btn-lg d-inline-flex align-items-center gap-2">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+          <path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        New task
+        <kbd class="kbd-hint d-none d-md-inline" aria-hidden="true">n</kbd>
+      </button>
     </header>
 
-    <main class="app-main">
-      <div class="status-line" id="status-line" role="status" aria-live="polite"></div>
+    <section class="row row-cols-2 row-cols-lg-4 g-3 mb-4" id="stats" aria-label="Summary"></section>
 
-      <div class="skeleton-grid" id="skeleton" hidden>
-        <div class="skeleton-card" aria-hidden="true"></div>
-        <div class="skeleton-card" aria-hidden="true"></div>
-        <div class="skeleton-card" aria-hidden="true"></div>
+    <section class="card shadow-sm mb-3" aria-label="Filter tasks">
+      <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center gap-3">
+        <div class="input-group search-box">
+          <span class="input-group-text text-body-secondary" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="15" height="15" focusable="false">
+              <path d="M7 12a5 5 0 100-10 5 5 0 000 10zM11 11l3 3" fill="none" stroke="currentColor"
+                stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </span>
+          <label class="visually-hidden" for="search-input">Search tasks</label>
+          <input id="search-input" name="search" type="search" class="form-control" autocomplete="off"
+            spellcheck="false" placeholder="Search tasks">
+          <span class="input-group-text d-none d-md-flex" aria-hidden="true"><kbd class="kbd-hint">/</kbd></span>
+        </div>
+
+        <div class="filter-pills ms-lg-auto">
+          <span class="visually-hidden" id="filters-label">Status</span>
+          <div class="nav nav-pills flex-nowrap" id="status-chips" role="group" aria-labelledby="filters-label"></div>
+        </div>
       </div>
+    </section>
 
-      <section class="task-grid" id="task-grid" aria-label="Tasks"></section>
+    <div class="small text-body-secondary mb-3 status-line" id="status-line" role="status" aria-live="polite"></div>
 
-      <div class="empty-state" id="empty-state" hidden>
-        <p class="empty-state__glyph" aria-hidden="true">☐</p>
-        <h2 id="empty-state-title">No tasks here</h2>
-        <p id="empty-state-text">Create your first task in this space, or relax the filters.</p>
-        <button type="button" class="button-primary" id="empty-state-action">New task</button>
-      </div>
-    </main>
-
-    <footer class="app-footer">
-      <span>Loopback only · <kbd>/</kbd> search · <kbd>n</kbd> new task · <kbd>Esc</kbd> close</span>
-    </footer>
-  </div>
-
-  <dialog id="task-dialog" aria-labelledby="task-dialog-title">
-    <article>
-      <header>
-        <h2 id="task-dialog-title">New task</h2>
-        <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-            <path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" />
-          </svg>
-        </button>
-      </header>
-
-      <form id="task-form" novalidate>
-        <label for="task-name">Name <span class="required" aria-hidden="true">*</span></label>
-        <input id="task-name" name="name" type="text" required maxlength="200" autocomplete="off"
-          placeholder="What needs doing?">
-
-        <label for="task-description">Description</label>
-        <textarea id="task-description" name="description" rows="3" maxlength="4000"
-          placeholder="Optional detail"></textarea>
-
-        <div class="form-row">
-          <div class="field">
-            <label for="task-due">Due date</label>
-            <input id="task-due" name="dueOn" type="date">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="skeleton" hidden aria-hidden="true">
+      <div class="col">
+        <div class="card skeleton-card placeholder-glow">
+          <div class="card-body">
+            <span class="placeholder col-4 mb-3"></span>
+            <span class="placeholder col-10 placeholder-lg mb-2"></span>
+            <span class="placeholder col-7"></span>
           </div>
-          <div class="field">
-            <label for="task-status">Status</label>
-            <select id="task-status" name="status">
+        </div>
+      </div>
+      <div class="col d-none d-md-block">
+        <div class="card skeleton-card placeholder-glow">
+          <div class="card-body">
+            <span class="placeholder col-3 mb-3"></span>
+            <span class="placeholder col-8 placeholder-lg mb-2"></span>
+            <span class="placeholder col-6"></span>
+          </div>
+        </div>
+      </div>
+      <div class="col d-none d-xl-block">
+        <div class="card skeleton-card placeholder-glow">
+          <div class="card-body">
+            <span class="placeholder col-5 mb-3"></span>
+            <span class="placeholder col-9 placeholder-lg mb-2"></span>
+            <span class="placeholder col-5"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="task-grid" aria-label="Tasks"></section>
+
+    <div class="card empty-state text-center" id="empty-state" hidden>
+      <div class="card-body py-5 px-3">
+        <div class="empty-state__glyph mx-auto mb-3" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="28" height="28" focusable="false">
+            <path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h2 class="h5 fw-bold" id="empty-state-title">No tasks here</h2>
+        <p class="text-body-secondary mx-auto mb-4" id="empty-state-text">Create your first task in this space, or
+          relax the filters.</p>
+        <button type="button" class="btn btn-primary" id="empty-state-action">New task</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="container-xxl pb-4 text-body-secondary small app-footer">
+    <div class="border-top pt-3 d-flex flex-wrap justify-content-between gap-2">
+      <span>Loopback only</span>
+      <span><kbd>/</kbd> search · <kbd>n</kbd> new task · <kbd>Esc</kbd> close</span>
+    </div>
+  </footer>
+
+  <dialog id="task-dialog" class="app-dialog" aria-labelledby="task-dialog-title">
+    <header class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+      <h2 class="h5 fw-bold mb-0" id="task-dialog-title">New task</h2>
+      <button type="button" class="btn-close" data-close-dialog aria-label="Close dialog"></button>
+    </header>
+
+    <form id="task-form" novalidate>
+      <div class="px-4 py-3">
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="task-name">Name <span class="text-danger"
+              aria-hidden="true">*</span></label>
+          <input id="task-name" name="name" type="text" class="form-control" required maxlength="200"
+            autocomplete="off" placeholder="What needs doing?">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="task-description">Description</label>
+          <textarea id="task-description" name="description" class="form-control" rows="3" maxlength="4000"
+            placeholder="Optional detail"></textarea>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-sm-6">
+            <label class="form-label fw-semibold" for="task-due">Due date</label>
+            <input id="task-due" name="dueOn" type="date" class="form-control">
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="form-label fw-semibold" for="task-status">Status</label>
+            <select id="task-status" name="status" class="form-select">
               <option value="pending">Pending</option>
               <option value="ongoing">Ongoing</option>
               <option value="backlog">Backlog</option>
@@ -125,63 +199,62 @@
           </div>
         </div>
 
-        <label for="task-remarks">Remarks</label>
-        <textarea id="task-remarks" name="remarks" rows="2" maxlength="4000"
-          placeholder="Notes, links, anything else"></textarea>
+        <div class="mb-1">
+          <label class="form-label fw-semibold" for="task-remarks">Remarks</label>
+          <textarea id="task-remarks" name="remarks" class="form-control" rows="2" maxlength="4000"
+            placeholder="Notes, links, anything else"></textarea>
+        </div>
 
-        <p class="form-error" id="task-form-error" role="alert" hidden></p>
+        <div class="alert alert-danger mt-3 mb-0 py-2" id="task-form-error" role="alert" hidden></div>
+      </div>
 
-        <footer>
-          <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
-          <button type="submit" class="button-primary" id="task-submit">Save task</button>
-        </footer>
-      </form>
-    </article>
-  </dialog>
-
-  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
-    <article>
-      <header>
-        <h2 id="confirm-title">Delete task?</h2>
-      </header>
-      <p id="confirm-text">This removes the task from the sheet. It cannot be undone.</p>
-      <footer>
-        <button type="button" class="button-secondary" data-close-dialog id="confirm-cancel">Keep it</button>
-        <button type="button" class="button-danger" id="confirm-accept">Delete</button>
+      <footer class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 px-4 py-3 border-top">
+        <button type="button" class="btn btn-outline-secondary" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="task-submit">Save task</button>
       </footer>
-    </article>
+    </form>
   </dialog>
 
-  <dialog id="space-dialog" aria-labelledby="space-dialog-title">
-    <article>
-      <header>
-        <h2 id="space-dialog-title">New space</h2>
-        <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
-          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-            <path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" />
-          </svg>
-        </button>
-      </header>
-
-      <form id="space-form" novalidate>
-        <label for="space-name">Name <span class="required" aria-hidden="true">*</span></label>
-        <input id="space-name" name="name" type="text" required maxlength="64" autocomplete="off"
-          placeholder="e.g. work">
-        <p class="form-error" id="space-error" role="alert" hidden></p>
-
-        <footer>
-          <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
-          <button type="submit" class="button-primary">Create space</button>
-        </footer>
-      </form>
-    </article>
+  <dialog id="confirm-dialog" class="app-dialog app-dialog--sm" aria-labelledby="confirm-title"
+    aria-describedby="confirm-text">
+    <header class="px-4 pt-4">
+      <h2 class="h5 fw-bold mb-0" id="confirm-title">Delete task?</h2>
+    </header>
+    <p class="px-4 pt-2 pb-3 mb-0 text-body-secondary" id="confirm-text">This removes the task from the sheet. It
+      cannot be undone.</p>
+    <footer class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 px-4 pb-4">
+      <button type="button" class="btn btn-outline-secondary" data-close-dialog id="confirm-cancel">Keep it</button>
+      <button type="button" class="btn btn-danger" id="confirm-accept">Delete</button>
+    </footer>
   </dialog>
 
-  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+  <dialog id="space-dialog" class="app-dialog app-dialog--sm" aria-labelledby="space-dialog-title">
+    <header class="d-flex align-items-center justify-content-between gap-3 px-4 py-3 border-bottom">
+      <h2 class="h5 fw-bold mb-0" id="space-dialog-title">New space</h2>
+      <button type="button" class="btn-close" data-close-dialog aria-label="Close dialog"></button>
+    </header>
+
+    <form id="space-form" novalidate>
+      <div class="px-4 py-3">
+        <label class="form-label fw-semibold" for="space-name">Name <span class="text-danger"
+            aria-hidden="true">*</span></label>
+        <input id="space-name" name="name" type="text" class="form-control" required maxlength="64"
+          autocomplete="off" placeholder="e.g. work">
+        <div class="alert alert-danger mt-3 mb-0 py-2" id="space-error" role="alert" hidden></div>
+      </div>
+
+      <footer class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 px-4 py-3 border-top">
+        <button type="button" class="btn btn-outline-secondary" data-close-dialog>Cancel</button>
+        <button type="submit" class="btn btn-primary">Create space</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toasts" aria-live="polite"
+    aria-atomic="false"></div>
 
   <noscript>
-    <p class="noscript">The dashboard needs JavaScript enabled.</p>
+    <div class="alert alert-danger m-3" role="alert">The dashboard needs JavaScript enabled.</div>
   </noscript>
 
   <script src="/app.js" defer></script>
