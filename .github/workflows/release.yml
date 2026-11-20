@@ -139,9 +139,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      # Scope to the binary artifacts: the docs job also uploads a 'github-pages' artifact, which
+      # contains a single file called artifact.tar and has no business in a GitHub release.
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: todo-*
           merge-multiple: true
 
       - uses: softprops/action-gh-release@v2
