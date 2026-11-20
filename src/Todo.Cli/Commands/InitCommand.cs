@@ -108,43 +108,6 @@ public sealed class InitCommand(
 /// </summary>
 public static class SpreadsheetIdParser
 {
-    public static string? TryExtract(string? input, out string? error)
-    {
-        error = null;
-
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            error = "A spreadsheet ID is required.";
-            return null;
-        }
-
-        var trimmed = input.Trim();
-
-        if (!trimmed.Contains('/'))
-        {
-            return IsPlausibleId(trimmed) ? trimmed : Invalid(out error);
-        }
-
-        var marker = "/spreadsheets/d/";
-        var index = trimmed.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
-        {
-            error = "That URL does not look like a Google Sheets link.";
-            return null;
-        }
-
-        var remainder = trimmed[(index + marker.Length)..];
-        var end = remainder.IndexOfAny(['/', '?', '#']);
-        var candidate = end < 0 ? remainder : remainder[..end];
-
-        return IsPlausibleId(candidate) ? candidate : Invalid(out error);
-    }
-
-    private static bool IsPlausibleId(string value) => value.Length >= 20 && value.All(char.IsLetterOrDigit);
-
-    private static string? Invalid(out string? error)
-    {
-        error = "That does not look like a spreadsheet ID.";
-        return null;
-    }
+    public static string? TryExtract(string? input, out string? error) =>
+        SpreadsheetId.TryExtract(input, out error);
 }
