@@ -132,4 +132,4 @@ tests/
 
 ## License
 
-No license has been chosen for this repository yet.
+MIT. See [LICENSE](LICENSE).
