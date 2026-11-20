@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Todo.Application/Todo.Application.csproj" />
+    <Project Path="src/Todo.Cli/Todo.Cli.csproj" />
+    <Project Path="src/Todo.Domain/Todo.Domain.csproj" />
+    <Project Path="src/Todo.Infrastructure.Configuration/Todo.Infrastructure.Configuration.csproj" />
+    <Project Path="src/Todo.Infrastructure.GoogleSheets/Todo.Infrastructure.GoogleSheets.csproj" />
+    <Project Path="src/Todo.Web/Todo.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Todo.Application.Tests/Todo.Application.Tests.csproj" />
+    <Project Path="tests/Todo.Architecture.Tests/Todo.Architecture.Tests.csproj" />
+    <Project Path="tests/Todo.Domain.Tests/Todo.Domain.Tests.csproj" />
+    <Project Path="tests/Todo.Infrastructure.Configuration.Tests/Todo.Infrastructure.Configuration.Tests.csproj" />
+    <Project Path="tests/Todo.Infrastructure.GoogleSheets.Tests/Todo.Infrastructure.GoogleSheets.Tests.csproj" />
+    <Project Path="tests/Todo.Web.Tests/Todo.Web.Tests.csproj" />
+  </Folder>
+</Solution>

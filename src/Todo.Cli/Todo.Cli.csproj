@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Todo.Cli</RootNamespace>
+    <AssemblyName>todo</AssemblyName>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <!-- References must not drop .pdb/.xml next to the executable, otherwise "single file" is a lie. -->
+    <AllowedReferenceRelatedFileExtensions></AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishIISAssets>false</PublishIISAssets>
+  </PropertyGroup>
+
+  <!--
+    The XML doc files are produced because IDE0005 needs GenerateDocumentationFile to be on. They are
+    build artefacts of the analyzer, not deliverables, so they never reach the publish folder: the
+    point of this project is a single executable. aspnetcorev2_inprocess is an IIS-only hosting shim
+    that a loopback dashboard never loads.
+  -->
+  <Target Name="RemoveDocumentationFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Extension)' == '.xml' Or '%(Extension)' == '.pdb'" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Filename)' == 'aspnetcorev2_inprocess'" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Todo.Application\Todo.Application.csproj" />
+    <ProjectReference Include="..\Todo.Domain\Todo.Domain.csproj" />
+    <ProjectReference Include="..\Todo.Infrastructure.Configuration\Todo.Infrastructure.Configuration.csproj" />
+    <ProjectReference Include="..\Todo.Infrastructure.GoogleSheets\Todo.Infrastructure.GoogleSheets.csproj" />
+    <ProjectReference Include="..\Todo.Web\Todo.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="Spectre.Console.Cli" />
+  </ItemGroup>
+
+</Project>

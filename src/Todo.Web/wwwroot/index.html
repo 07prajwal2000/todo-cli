@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Local dashboard for the todo CLI.">
+  <title>Todo Dashboard</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="stylesheet" href="/app.css">
+</head>
+
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header__title">
+        <h1>Todo <span class="app-header__accent">Dashboard</span></h1>
+        <p class="app-header__meta" id="server-meta">Connecting…</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="field field--space">
+          <label for="space-select">Space</label>
+          <div class="space-control">
+            <select id="space-select" name="space">
+              <option value="">Loading…</option>
+            </select>
+            <button type="button" class="icon-button" id="add-space" aria-label="Create a space"
+              title="Create a space">
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+                <path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" />
+              </svg>
+            </button>
+            <button type="button" class="icon-button" id="delete-space" aria-label="Delete the current space"
+              title="Delete the current space">
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+                <path d="M3.5 5h9M6.5 5V3.5h3V5M5 5l.6 8h4.8L11 5" fill="none" stroke="currentColor"
+                  stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field field--search">
+          <label for="search-input">Search</label>
+          <input id="search-input" name="search" type="search" autocomplete="off" spellcheck="false"
+            placeholder="Name, description or remarks  ( / )">
+        </div>
+
+        <div class="field field--filters">
+          <span class="field__label" id="filters-label">Status</span>
+          <div class="chips" id="status-chips" role="group" aria-labelledby="filters-label"></div>
+        </div>
+
+        <div class="field field--action">
+          <button type="button" id="new-task" class="button-primary">
+            <span aria-hidden="true">＋</span> New task
+            <kbd class="kbd-hint">n</kbd>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="status-line" id="status-line" role="status" aria-live="polite"></div>
+
+      <div class="skeleton-grid" id="skeleton" hidden>
+        <div class="skeleton-card" aria-hidden="true"></div>
+        <div class="skeleton-card" aria-hidden="true"></div>
+        <div class="skeleton-card" aria-hidden="true"></div>
+      </div>
+
+      <section class="task-grid" id="task-grid" aria-label="Tasks"></section>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <p class="empty-state__glyph" aria-hidden="true">☐</p>
+        <h2 id="empty-state-title">No tasks here</h2>
+        <p id="empty-state-text">Create your first task in this space, or relax the filters.</p>
+        <button type="button" class="button-primary" id="empty-state-action">New task</button>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <span>Loopback only · <kbd>/</kbd> search · <kbd>n</kbd> new task · <kbd>Esc</kbd> close</span>
+    </footer>
+  </div>
+
+  <dialog id="task-dialog" aria-labelledby="task-dialog-title">
+    <article>
+      <header>
+        <h2 id="task-dialog-title">New task</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+            <path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <form id="task-form" novalidate>
+        <label for="task-name">Name <span class="required" aria-hidden="true">*</span></label>
+        <input id="task-name" name="name" type="text" required maxlength="200" autocomplete="off"
+          placeholder="What needs doing?">
+
+        <label for="task-description">Description</label>
+        <textarea id="task-description" name="description" rows="3" maxlength="4000"
+          placeholder="Optional detail"></textarea>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="task-due">Due date</label>
+            <input id="task-due" name="dueOn" type="date">
+          </div>
+          <div class="field">
+            <label for="task-status">Status</label>
+            <select id="task-status" name="status">
+              <option value="pending">Pending</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="backlog">Backlog</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="task-remarks">Remarks</label>
+        <textarea id="task-remarks" name="remarks" rows="2" maxlength="4000"
+          placeholder="Notes, links, anything else"></textarea>
+
+        <p class="form-error" id="task-form-error" role="alert" hidden></p>
+
+        <footer>
+          <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
+          <button type="submit" class="button-primary" id="task-submit">Save task</button>
+        </footer>
+      </form>
+    </article>
+  </dialog>
+
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+    <article>
+      <header>
+        <h2 id="confirm-title">Delete task?</h2>
+      </header>
+      <p id="confirm-text">This removes the task from the sheet. It cannot be undone.</p>
+      <footer>
+        <button type="button" class="button-secondary" data-close-dialog id="confirm-cancel">Keep it</button>
+        <button type="button" class="button-danger" id="confirm-accept">Delete</button>
+      </footer>
+    </article>
+  </dialog>
+
+  <dialog id="space-dialog" aria-labelledby="space-dialog-title">
+    <article>
+      <header>
+        <h2 id="space-dialog-title">New space</h2>
+        <button type="button" class="icon-button" data-close-dialog aria-label="Close dialog">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+            <path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <form id="space-form" novalidate>
+        <label for="space-name">Name <span class="required" aria-hidden="true">*</span></label>
+        <input id="space-name" name="name" type="text" required maxlength="64" autocomplete="off"
+          placeholder="e.g. work">
+        <p class="form-error" id="space-error" role="alert" hidden></p>
+
+        <footer>
+          <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
+          <button type="submit" class="button-primary">Create space</button>
+        </footer>
+      </form>
+    </article>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <noscript>
+    <p class="noscript">The dashboard needs JavaScript enabled.</p>
+  </noscript>
+
+  <script src="/app.js" defer></script>
+</body>
+
+</html>
