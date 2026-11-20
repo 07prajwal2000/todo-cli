@@ -19,6 +19,9 @@ in a spreadsheet you already own. A local dashboard is available via `todo serve
 - **Local-only dashboard.** `todo server` binds `127.0.0.1` only, on port 12000, with a request guard
   that rejects foreign origins and requires a client header for mutations.
 - **Scriptable.** Stable exit codes (0 success, 1 failure, 2 usage, 3 configuration), `--json` output.
+- **AI-agent friendly.** Every read command has `--json`, mutations accept `-y/--yes` to skip prompts,
+  exit codes are stable, and the dashboard exposes the same operations as a local JSON HTTP API — so an
+  agent never has to parse human-formatted output.
 - **Honest packaging.** One self-contained, compressed binary per platform, ~52 MB. The official Google
   SDK is reflection-based and not trim/AOT safe, so trimming is deliberately off rather than shipping a
   binary that crashes.
