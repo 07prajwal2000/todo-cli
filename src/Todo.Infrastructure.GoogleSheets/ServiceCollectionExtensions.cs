@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Todo.Application.Notes;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
 
@@ -26,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<SheetsConnectionFactory>();
         services.TryAddSingleton<SheetsGateway>();
         services.TryAddSingleton<ITaskRepository, SheetsTaskRepository>();
+        services.TryAddSingleton<INoteRepository, SheetsNoteRepository>();
         services.TryAddSingleton<ISpaceRepository, SheetsSpaceRepository>();
         services.TryAddSingleton<IBackendProbe, SheetsBackendProbe>();
 

@@ -23,7 +23,7 @@ it is two tasks.
 | Fallback | `default` is the fallback space. It is created by `todo init` and cannot be deleted. |
 | Id scope | Ids are per-space. Two spaces can each have a task `#1`. |
 | Auto-create | `todo add -s <space>` creates the tab if it does not exist. |
-| Reserved | Tabs whose name starts with `_` are internal and never listed as spaces. `_meta` is the only one today. |
+| Reserved | Tabs whose name starts with `_` are internal and never listed as spaces. `_meta` (bookkeeping) and `_notes` (markdown notes). |
 | Ordering | `todo spaces` lists them case-insensitively alphabetical. |
 | Deletion | `todo space rm` deletes the worksheet tab and every task in it. |
 

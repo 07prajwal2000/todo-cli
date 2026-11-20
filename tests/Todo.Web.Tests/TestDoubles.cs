@@ -1,6 +1,8 @@
 using Todo.Application.Common;
+using Todo.Application.Notes;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
+using Todo.Domain.Notes;
 using Todo.Domain.Spaces;
 using Todo.Domain.Tasks;
 
@@ -101,6 +103,45 @@ internal sealed class InMemoryTaskRepository : ITaskRepository
             return store;
         }
     }
+}
+
+internal sealed class InMemoryNoteRepository : INoteRepository
+{
+    private readonly List<Note> _notes = [];
+
+    public IReadOnlyList<Note> Snapshot() => [.. _notes];
+
+    public Task<Result<IReadOnlyList<Note>>> ListAsync(CancellationToken cancellationToken) =>
+        Task.FromResult(Result<IReadOnlyList<Note>>.Success([.. _notes]));
+
+    public Task<Result<Note>> FindAsync(int id, CancellationToken cancellationToken) =>
+        Task.FromResult(_notes.FirstOrDefault(note => note.Id == id) is { } found
+            ? Result<Note>.Success(found)
+            : TodoError.NotFound($"Note {id} was not found."));
+
+    public Task<Result<Note>> AddAsync(Note draft, CancellationToken cancellationToken)
+    {
+        var note = draft with { Id = _notes.Select(existing => existing.Id).DefaultIfEmpty(0).Max() + 1 };
+        _notes.Add(note);
+        return Task.FromResult(Result<Note>.Success(note));
+    }
+
+    public Task<Result<Note>> UpdateAsync(Note note, CancellationToken cancellationToken)
+    {
+        var index = _notes.FindIndex(existing => existing.Id == note.Id);
+        if (index < 0)
+        {
+            return Task.FromResult<Result<Note>>(TodoError.NotFound($"Note {note.Id} was not found."));
+        }
+
+        _notes[index] = note;
+        return Task.FromResult(Result<Note>.Success(note));
+    }
+
+    public Task<Result> DeleteAsync(int id, CancellationToken cancellationToken) =>
+        Task.FromResult(_notes.RemoveAll(note => note.Id == id) > 0
+            ? Result.Success()
+            : Result.Failure(TodoError.NotFound($"Note {id} was not found.")));
 }
 
 internal sealed class InMemorySpaceRepository : ISpaceRepository

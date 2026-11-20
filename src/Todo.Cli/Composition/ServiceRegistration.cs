@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using Todo.Application.Notes;
 using Todo.Application.Setup;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
@@ -32,6 +33,7 @@ public static class ServiceRegistration
         services.AddGoogleSheetsInfrastructure();
 
         services.AddSingleton<TaskService>();
+        services.AddSingleton<NoteService>();
         services.AddSingleton<SpaceService>();
         services.AddSingleton<SetupService>();
         services.AddSingleton<DiagnosticsService>();

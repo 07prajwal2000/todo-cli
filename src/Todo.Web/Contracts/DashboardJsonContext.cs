@@ -18,5 +18,9 @@ namespace Todo.Web.Contracts;
 [JsonSerializable(typeof(SpacesResponse))]
 [JsonSerializable(typeof(SpaceResponse))]
 [JsonSerializable(typeof(TasksResponse))]
+[JsonSerializable(typeof(NoteDto))]
+[JsonSerializable(typeof(NotesResponse))]
+[JsonSerializable(typeof(CreateNoteRequest))]
+[JsonSerializable(typeof(UpdateNoteRequest))]
 [JsonSerializable(typeof(ErrorResponse))]
 public sealed partial class DashboardJsonContext : JsonSerializerContext;

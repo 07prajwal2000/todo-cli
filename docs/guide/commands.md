@@ -20,6 +20,7 @@ todo rm <ID>              Delete one or more tasks from the sheet
 todo spaces               List spaces (sheet tabs)
 todo space add <NAME>     Create a space
 todo space rm <NAME>      Delete a space and its tasks
+todo notes add|ls|show|edit|rm  Markdown notes (stored on the '_notes' tab)
 todo doctor               Check configuration, credentials and sheet schema
 todo server               Serve the local dashboard
 todo config <ACTION>      Inspect or change configuration

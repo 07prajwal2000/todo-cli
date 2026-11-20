@@ -16,6 +16,8 @@ in a spreadsheet you already own. A local dashboard is available via `todo serve
 - **Per-space auto-increment ids** that are never reused, so `#7` always means the same task.
 - **RAW writes.** Sheets never coerces `1-2` into a date and a name starting with `=` stays text, which
   also prevents formula injection into your sheet.
+- **Markdown notes.** `todo notes add|ls|show|edit|rm` stores simple notes (`id`, `title`, `content`,
+  `created_at`) on a `_notes` tab, with a markdown viewer and editor in the dashboard.
 - **Local-only dashboard.** `todo server` binds `127.0.0.1` only, on port 12000, with a request guard
   that rejects foreign origins and requires a client header for mutations.
 - **Scriptable.** Stable exit codes (0 success, 1 failure, 2 usage, 3 configuration), `--json` output.
@@ -69,6 +71,7 @@ Or build it: `cd docs && npm install && npm run docs:build` → output in `docs/
 | [Google Cloud setup](docs/guide/google-cloud-setup.md) | The full credential walkthrough |
 | [Commands](docs/guide/commands.md) | Every command, flag, alias and exit code |
 | [Spaces](docs/guide/spaces.md) | The tab model, naming rules, ids |
+| [Notes](docs/guide/notes.md) | `todo notes`, the notes tab, the dashboard editor |
 | [Dashboard](docs/guide/dashboard.md) | `todo server`, the HTTP API, the local-only security model |
 | [Configuration](docs/guide/configuration.md) | Config locations, env vars, `todo config` |
 | [Sheet schema](docs/reference/sheet-schema.md) | The column contract and what is safe to edit by hand |

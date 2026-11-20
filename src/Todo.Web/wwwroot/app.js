@@ -972,8 +972,8 @@
         return;
       }
 
-      // A modal already traps focus; the shortcuts would fight it.
-      if (document.querySelector('dialog[open]')) {
+      // A modal already traps focus; the shortcuts would fight it. They belong to the task view only.
+      if (document.body.dataset.view === 'notes' || document.querySelector('dialog[open]')) {
         return;
       }
 
@@ -987,6 +987,9 @@
       }
     });
   }
+
+  // Shared with notes.js, which loads after this file.
+  window.todoApp = { api, el, toast };
 
   document.addEventListener('DOMContentLoaded', () => {
     cacheDom();

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Todo.Application.Notes;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
 using Todo.Domain.Spaces;
@@ -17,12 +18,19 @@ internal sealed class DashboardHarness : IAsyncDisposable
 {
     public static readonly DateTimeOffset Now = new(2025, 3, 14, 9, 30, 0, TimeSpan.Zero);
 
-    private DashboardHarness(WebApplication app, InMemoryTaskRepository tasks, InMemorySpaceRepository spaces)
+    private DashboardHarness(
+        WebApplication app,
+        InMemoryTaskRepository tasks,
+        InMemorySpaceRepository spaces,
+        InMemoryNoteRepository notes)
     {
         App = app;
         Tasks = tasks;
         Spaces = spaces;
+        Notes = notes;
     }
+
+    public InMemoryNoteRepository Notes { get; }
 
     public WebApplication App { get; }
 
@@ -37,11 +45,13 @@ internal sealed class DashboardHarness : IAsyncDisposable
     {
         var tasks = new InMemoryTaskRepository();
         var spaces = new InMemorySpaceRepository();
+        var notes = new InMemoryNoteRepository();
         var clock = new FixedClock(Now);
 
         var dependencies = new DashboardDependencies
         {
             TaskService = new TaskService(tasks, clock),
+            NoteService = new NoteService(notes, clock),
             SpaceService = new SpaceService(spaces),
             Clock = clock,
             DefaultSpace = defaultSpace,
@@ -55,7 +65,7 @@ internal sealed class DashboardHarness : IAsyncDisposable
         app.Urls.Clear();
         await app.StartAsync();
 
-        return new DashboardHarness(app, tasks, spaces);
+        return new DashboardHarness(app, tasks, spaces, notes);
     }
 
     public HttpClient CreateClient() => new()

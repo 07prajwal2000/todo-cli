@@ -38,3 +38,18 @@ public sealed record CreateSpaceRequest
 {
     public string? Name { get; init; }
 }
+
+public sealed record CreateNoteRequest
+{
+    public string? Title { get; init; }
+
+    public string? Content { get; init; }
+}
+
+/// <summary>Partial update: <c>null</c> leaves the field as is.</summary>
+public sealed record UpdateNoteRequest
+{
+    public string? Title { get; init; }
+
+    public string? Content { get; init; }
+}

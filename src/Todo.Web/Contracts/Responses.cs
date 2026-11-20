@@ -42,3 +42,8 @@ public sealed record ErrorResponse
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, string[]>? Fields { get; init; }
 }
+
+public sealed record NotesResponse
+{
+    public IReadOnlyList<NoteDto> Notes { get; init; } = [];
+}

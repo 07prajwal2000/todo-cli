@@ -33,7 +33,7 @@ public sealed class DomainShapeTests
     [Fact]
     public void DomainTypesStayInTheDocumentedNamespaces()
     {
-        string[] allowed = ["Todo.Domain", "Todo.Domain.Common", "Todo.Domain.Tasks", "Todo.Domain.Spaces"];
+        string[] allowed = ["Todo.Domain", "Todo.Domain.Common", "Todo.Domain.Tasks", "Todo.Domain.Spaces", "Todo.Domain.Notes"];
 
         var unexpected = DeclaredTypes()
             .Where(type => !allowed.Contains(type.Namespace ?? string.Empty, StringComparer.Ordinal))
@@ -57,7 +57,7 @@ public sealed class DomainShapeTests
     [Fact]
     public void DomainEntitiesAndErrorTypesAreRecordsWithStructuralEquality()
     {
-        Type[] records = [typeof(TaskItem), typeof(Todo.Domain.Common.FieldErrors)];
+        Type[] records = [typeof(TaskItem), typeof(Todo.Domain.Notes.Note), typeof(Todo.Domain.Common.FieldErrors)];
 
         Assert.All(
             records,

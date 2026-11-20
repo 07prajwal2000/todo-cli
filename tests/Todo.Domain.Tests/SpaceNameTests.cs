@@ -54,6 +54,13 @@ public sealed class SpaceNameTests
     }
 
     [Fact]
+    public void TheNotesTabNameCanNeverCollideWithASpace()
+    {
+        Assert.False(SpaceName.IsValid(Todo.Domain.Notes.NoteSchema.TabName, out _));
+        Assert.True(SpaceName.IsValid("notes", out _));
+    }
+
+    [Fact]
     public void IsValidRejectsALeadingUnderscoreBecauseThatPrefixIsReserved()
     {
         Assert.False(SpaceName.IsValid("_meta", out var error));

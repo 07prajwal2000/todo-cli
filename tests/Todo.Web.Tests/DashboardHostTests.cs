@@ -77,6 +77,7 @@ public sealed class DashboardHostTests
         var dependencies = new DashboardDependencies
         {
             TaskService = new Application.Tasks.TaskService(new InMemoryTaskRepository(), clock),
+            NoteService = new Application.Notes.NoteService(new InMemoryNoteRepository(), clock),
             SpaceService = new Application.Spaces.SpaceService(new InMemorySpaceRepository()),
             Clock = clock,
         };
@@ -105,6 +106,7 @@ public sealed class DashboardHostTests
         var dependencies = new DashboardDependencies
         {
             TaskService = new Application.Tasks.TaskService(new InMemoryTaskRepository(), clock),
+            NoteService = new Application.Notes.NoteService(new InMemoryNoteRepository(), clock),
             SpaceService = new Application.Spaces.SpaceService(new InMemorySpaceRepository()),
             Clock = clock,
         };

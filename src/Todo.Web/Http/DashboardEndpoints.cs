@@ -31,6 +31,8 @@ internal static class DashboardEndpoints
         api.MapPost("/spaces", (HttpContext context, CancellationToken ct) => CreateSpaceAsync(context, dependencies, ct));
         api.MapDelete("/spaces/{name}", (string name, CancellationToken ct) => DeleteSpaceAsync(name, dependencies, ct));
 
+        api.MapNoteApi(dependencies);
+
         api.MapGet("/tasks", (HttpContext context, CancellationToken ct) => ListTasksAsync(context, dependencies, ct));
         api.MapGet("/tasks/{id}", (string id, HttpContext context, CancellationToken ct) =>
             GetTaskAsync(id, context, dependencies, ct));

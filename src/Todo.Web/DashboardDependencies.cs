@@ -1,4 +1,5 @@
 using Todo.Application.Common;
+using Todo.Application.Notes;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
 
@@ -11,6 +12,8 @@ namespace Todo.Web;
 public sealed record DashboardDependencies
 {
     public required TaskService TaskService { get; init; }
+
+    public required NoteService NoteService { get; init; }
 
     public required SpaceService SpaceService { get; init; }
 

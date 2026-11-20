@@ -201,6 +201,11 @@ All responses are `application/json` with camelCase properties. The JSON shapes 
 | `POST` | `/api/tasks` | Create a task → `201` |
 | `PATCH` | `/api/tasks/{id}` | Partial update, including a state change |
 | `DELETE` | `/api/tasks/{id}` | Delete a task → `204` |
+| `GET` | `/api/notes` | List notes, newest first; optional `q` searches title and content |
+| `GET` | `/api/notes/{id}` | One note |
+| `POST` | `/api/notes` | Create a note from `{title, content}` → `201` |
+| `PATCH` | `/api/notes/{id}` | Partial update of `title` and/or `content` |
+| `DELETE` | `/api/notes/{id}` | Delete a note → `204` |
 | `GET` | `/{path}` | Embedded static assets; unknown paths are `404` |
 
 Unknown non-root asset paths return `404` rather than `index.html`, so a stale asset reference fails

@@ -60,6 +60,16 @@ public static class CommandRegistrar
             space.AddCommand<SpaceRemoveCommand>("rm").WithDescription("Delete a space and its tasks.");
         });
 
+        config.AddBranch("notes", notes =>
+        {
+            notes.SetDescription("Markdown notes (stored on the '_notes' tab).");
+            notes.AddCommand<NoteAddCommand>("add").WithDescription("Add a note.");
+            notes.AddCommand<NoteListCommand>("ls").WithDescription("List notes, newest first.");
+            notes.AddCommand<NoteShowCommand>("show").WithDescription("Print one note.");
+            notes.AddCommand<NoteEditCommand>("edit").WithDescription("Edit a note's title or content.");
+            notes.AddCommand<NoteRemoveCommand>("rm").WithDescription("Delete a note.");
+        });
+
         config.AddCommand<DoctorCommand>("doctor")
             .WithDescription("Check configuration, credentials and sheet schema.");
 

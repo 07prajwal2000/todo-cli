@@ -35,6 +35,11 @@
         <span>Todo</span>
       </a>
 
+      <ul class="nav nav-pills flex-nowrap me-auto" id="view-nav" aria-label="Views">
+        <li class="nav-item"><a class="nav-link active" href="#/" data-view="tasks">Tasks</a></li>
+        <li class="nav-item"><a class="nav-link" href="#/notes" data-view="notes">Notes</a></li>
+      </ul>
+
       <div class="space-picker">
         <label class="visually-hidden" for="space-select">Space</label>
         <div class="input-group">
@@ -66,7 +71,7 @@
     </div>
   </nav>
 
-  <main class="container-xxl py-4 py-lg-5">
+  <main class="container-xxl py-4 py-lg-5" id="tasks-view">
     <header class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
       <div class="min-w-0">
         <h1 class="h2 fw-bold mb-1">Tasks</h1>
@@ -152,6 +157,87 @@
           relax the filters.</p>
         <button type="button" class="btn btn-primary" id="empty-state-action">New task</button>
       </div>
+    </div>
+  </main>
+
+  <main class="container-xxl py-4 py-lg-5" id="notes-view" hidden>
+    <header class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+      <div class="min-w-0">
+        <h1 class="h2 fw-bold mb-1">Notes</h1>
+        <p class="text-body-secondary small mb-0" id="notes-meta">Markdown, stored on the “_notes” tab.</p>
+      </div>
+      <button type="button" id="new-note" class="btn btn-primary btn-lg d-inline-flex align-items-center gap-2">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+          <path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        New note
+      </button>
+    </header>
+
+    <div class="row g-3 align-items-start">
+      <section class="col-12 col-lg-4" aria-label="Note list">
+        <div class="card shadow-sm">
+          <div class="card-body border-bottom">
+            <label class="visually-hidden" for="note-search">Search notes</label>
+            <input id="note-search" name="note-search" type="search" class="form-control" autocomplete="off"
+              spellcheck="false" placeholder="Search notes">
+          </div>
+          <div class="list-group list-group-flush note-list" id="note-list"></div>
+        </div>
+      </section>
+
+      <section class="col-12 col-lg-8" aria-label="Note">
+        <article class="card shadow-sm" id="note-view" hidden>
+          <div class="card-body">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+              <div class="min-w-0">
+                <h2 class="h3 fw-bold mb-1 text-break" id="note-view-title"></h2>
+                <p class="text-body-secondary small mb-0" id="note-view-meta"></p>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="note-edit">Edit</button>
+                <button type="button" class="btn btn-outline-danger" id="note-delete">Delete</button>
+              </div>
+            </div>
+            <div class="markdown-body" id="note-view-body"></div>
+          </div>
+        </article>
+
+        <form class="card shadow-sm" id="note-form" novalidate hidden>
+          <div class="card-body">
+            <label class="form-label fw-semibold" for="note-title">Title <span class="text-danger"
+                aria-hidden="true">*</span></label>
+            <input id="note-title" name="title" type="text" class="form-control mb-3" required maxlength="200"
+              autocomplete="off" placeholder="Note title">
+
+            <div class="row g-3">
+              <div class="col-12 col-xl-6">
+                <label class="form-label fw-semibold" for="note-content">Markdown</label>
+                <textarea id="note-content" name="content" class="form-control note-editor" maxlength="50000"
+                  spellcheck="true" placeholder="Write in markdown…"></textarea>
+              </div>
+              <div class="col-12 col-xl-6">
+                <span class="form-label fw-semibold d-block">Preview</span>
+                <div class="markdown-body note-preview border rounded p-3" id="note-preview" aria-live="polite"></div>
+              </div>
+            </div>
+
+            <div class="alert alert-danger mt-3 mb-0 py-2" id="note-form-error" role="alert" hidden></div>
+          </div>
+          <div class="card-footer d-flex flex-column-reverse flex-sm-row justify-content-end gap-2">
+            <button type="button" class="btn btn-outline-secondary" id="note-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="note-save">Save note <kbd class="kbd-hint d-none d-md-inline"
+                aria-hidden="true">Ctrl+S</kbd></button>
+          </div>
+        </form>
+
+        <div class="card empty-state text-center" id="note-empty">
+          <div class="card-body py-5 px-3">
+            <h2 class="h5 fw-bold" id="note-empty-title">No note selected</h2>
+            <p class="text-body-secondary mx-auto mb-0" id="note-empty-text">Pick a note from the list, or create a new one.</p>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -250,6 +336,18 @@
     </form>
   </dialog>
 
+  <dialog id="note-confirm-dialog" class="app-dialog app-dialog--sm" aria-labelledby="note-confirm-title"
+    aria-describedby="note-confirm-text">
+    <header class="px-4 pt-4">
+      <h2 class="h5 fw-bold mb-0" id="note-confirm-title">Delete note?</h2>
+    </header>
+    <p class="px-4 pt-2 pb-3 mb-0 text-body-secondary" id="note-confirm-text"></p>
+    <footer class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 px-4 pb-4">
+      <button type="button" class="btn btn-outline-secondary" data-close-dialog id="note-confirm-cancel">Keep it</button>
+      <button type="button" class="btn btn-danger" id="note-confirm-accept">Delete</button>
+    </footer>
+  </dialog>
+
   <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toasts" aria-live="polite"
     aria-atomic="false"></div>
 
@@ -257,7 +355,10 @@
     <div class="alert alert-danger m-3" role="alert">The dashboard needs JavaScript enabled.</div>
   </noscript>
 
+  <script src="/purify.min.js" defer></script>
+  <script src="/marked.min.js" defer></script>
   <script src="/app.js" defer></script>
+  <script src="/notes.js" defer></script>
 </body>
 
 </html>

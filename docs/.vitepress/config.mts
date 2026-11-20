@@ -41,6 +41,7 @@ export default defineConfig({
         items: [
           { text: 'Commands', link: '/guide/commands' },
           { text: 'Spaces', link: '/guide/spaces' },
+          { text: 'Notes', link: '/guide/notes' },
           { text: 'Dashboard', link: '/guide/dashboard' },
           { text: 'Configuration', link: '/guide/configuration' },
         ],

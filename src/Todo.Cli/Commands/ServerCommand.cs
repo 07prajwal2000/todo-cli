@@ -3,6 +3,7 @@ using System.Globalization;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Todo.Application.Common;
+using Todo.Application.Notes;
 using Todo.Application.Setup;
 using Todo.Application.Spaces;
 using Todo.Application.Tasks;
@@ -13,6 +14,7 @@ namespace Todo.Cli.Commands;
 
 public sealed class ServerCommand(
     TaskService tasks,
+    NoteService notes,
     SpaceService spaces,
     ISettingsStore settingsStore,
     IClock clock,
@@ -55,6 +57,7 @@ public sealed class ServerCommand(
         var dependencies = new DashboardDependencies
         {
             TaskService = tasks,
+            NoteService = notes,
             SpaceService = spaces,
             Clock = clock,
             DefaultSpace = initialSpace.Value,

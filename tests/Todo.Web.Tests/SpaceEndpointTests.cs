@@ -146,6 +146,7 @@ public sealed class SpaceEndpointTests
         var dependencies = new DashboardDependencies
         {
             TaskService = new Application.Tasks.TaskService(new InMemoryTaskRepository(), new FixedClock(DateTimeOffset.UnixEpoch)),
+            NoteService = new Application.Notes.NoteService(new InMemoryNoteRepository(), new FixedClock(DateTimeOffset.UnixEpoch)),
             SpaceService = new Application.Spaces.SpaceService(new InMemorySpaceRepository()),
             Clock = new FixedClock(DateTimeOffset.UnixEpoch),
             DefaultSpace = "   ",
